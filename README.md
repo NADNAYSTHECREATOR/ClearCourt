@@ -3,14 +3,14 @@
   <p style="color: #6b7280; font-size: 1.125rem; font-weight: 500; font-style: italic;">From Confusing to Clear</p>
 </div>
 
-<p align="center" style="color: #4b5563; max-width: 800px; margin-left: auto; margin-right: auto; margin-top: 25px; line-height: 1.7;">
-  Ever stared at a legal letter feeling completely lost? You're not alone! Legal documents are often packed with confusing words and strange sentences that just don't make sense to most of us. That's exactly why we built ClearCourt – to help you finally understand what those papers actually mean, without needing to hire a lawyer every time.
+<p align="center" style="color: #4b5563; max-width: 700px; margin-left: auto; margin-right: auto; margin-top: 25px; line-height: 1.6;">
+  Hi there! I'm just one person who built ClearCourt because I know how confusing legal papers can be. Ever get a letter you just don't understand? Most of us have! That's where ClearCourt comes in.
 </p>
 
-<p align="center" style="color: #4b5563; max-width: 800px; margin-left: auto; margin-right: auto; margin-top: 15px; line-height: 1.7;">
-  It's really simple to use: just upload your court letter, a notice, or any legal document you're struggling with. ClearCourt quickly reads through it, picks out the important stuff like who's involved, what needs to be done, and any deadlines. Then, it explains all of that in plain, everyday English. We don't just tell you what the words mean; we also help you understand what's at stake and give you clear advice on your next steps.
+<p align="center" style="color: #4b5563; max-width: 700px; margin-left: auto; margin-right: auto; margin-top: 15px; line-height: 1.6;">
+  It's super easy to use. Just upload your legal document – a court letter, a notice, anything really. ClearCourt will quickly read it and tell you in plain, simple words what it all means. You'll understand the main points, what you need to do, and any important dates. No more guessing!
 </p>
 
-<p align="center" style="color: #4b5563; max-width: 800px; margin-left: auto; margin-right: auto; margin-top: 15px; line-height: 1.7;">
-  Our goal with ClearCourt is to make legal stuff less stressful and much easier to handle. Whether it's something about your landlord, a small court case, or just a new agreement you're signing, we want to give you the confidence to know what's happening. Stop guessing and start understanding – ClearCourt is here to clear things up for you!
+<p align="center" style="color: #4b5563; max-width: 700px; margin-left: auto; margin-right: auto; margin-top: 15px; line-height: 1.6;">
+  My goal is to make things less stressful for you. I want everyone to feel confident understanding their legal documents. ClearCourt is here to help clear things up!
 </p>
