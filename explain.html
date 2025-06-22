@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Explain Document – ClearCourt</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+
+  <div class="max-w-3xl mx-auto bg-white shadow-xl rounded-xl p-6 mt-10">
+    <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Document Summary</h1>
+    <p class="mb-4 text-gray-600">Here is a summary and explanation of your court document:</p>
+
+    <pre id="summary" class="bg-gray-100 p-4 rounded h-80 overflow-auto text-sm whitespace-pre-wrap"></pre>
+
+    <button id="retryBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-6 block mx-auto hidden">Try Again</button>
+
+    <a href="upload.html" class="text-blue-600 hover:underline block mt-6 text-center">← Back to Upload</a>
+  </div>
+
+  <script>
+    // Paste your Gemini API key here
+    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
+
+    async function getGeminiResponse(text) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: {
+            text: `Explain this legal document in plain English:\n\n${text}`
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data?.candidates?.[0]?.content?.text || "No explanation returned.";
+    }
+
+    const summaryElement = document.getElementById("summary");
+    const retryBtn = document.getElementById("retryBtn");
+
+    async function summarizeAndShow(text) {
+      try {
+        summaryElement.textContent = "Summarizing document, please wait…";
+        retryBtn.classList.add("hidden");
+
+        const summary = await getGeminiResponse(text);
+        summaryElement.textContent = summary;
+
+      } catch (error) {
+        summaryElement.textContent = "Failed to get summary: " + error.message;
+        retryBtn.classList.remove("hidden");
+      }
+    }
+
+    retryBtn.onclick = () => {
+      retryBtn.classList.add("hidden");
+      loadAndSummarize();
+    };
+
+    function loadAndSummarize() {
+      const text = localStorage.getItem("courtText");
+      if (!text) {
+        summaryElement.textContent = "No court document text found. Please upload a document first.";
+        return;
+      }
+      summarizeAndShow(text);
+    }
+
+    // Start on page load
+    loadAndSummarize();
+  </script>
+
+</body>
+</html>
