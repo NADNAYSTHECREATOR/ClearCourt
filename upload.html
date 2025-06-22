@@ -23,18 +23,25 @@
     <h2 class="text-xl font-semibold mb-2">Extracted Text</h2>
     <pre id="extractedText" class="bg-gray-100 p-4 whitespace-pre-wrap rounded text-sm h-60 overflow-auto mb-4"></pre>
 
-    <a id="nextBtn" href="#" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 block text-center hidden">Next: Explain This Document →</a>
+    <button id="aiBtn" onclick="handleAIExplain()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full mb-6 hidden">Explain This Document</button>
+
+    <h2 class="text-xl font-semibold mb-2 hidden" id="aiSummaryLabel">AI Explanation</h2>
+    <pre id="aiOutput" class="bg-green-50 p-4 rounded text-sm text-gray-800 whitespace-pre-wrap h-60 overflow-auto hidden"></pre>
 
     <a href="index.html" class="text-blue-600 hover:underline block mt-6 text-center">← Back to Home</a>
   </div>
 
   <script>
+    let extractedText = "";
+
     async function startOCR() {
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       const extractedTextElement = document.getElementById('extractedText');
       const loadingElement = document.getElementById('loading');
-      const nextBtn = document.getElementById('nextBtn');
+      const aiBtn = document.getElementById('aiBtn');
+      const aiOutput = document.getElementById('aiOutput');
+      const aiSummaryLabel = document.getElementById('aiSummaryLabel');
 
       if (!file) {
         alert("Please select a file.");
@@ -43,22 +50,53 @@
 
       loadingElement.classList.remove("hidden");
       extractedTextElement.textContent = "";
+      aiOutput.classList.add("hidden");
+      aiSummaryLabel.classList.add("hidden");
 
       const reader = new FileReader();
       reader.onload = async function () {
         const imageData = reader.result;
         const { data: { text } } = await Tesseract.recognize(imageData, 'eng');
         loadingElement.classList.add("hidden");
+        extractedText = text;
         extractedTextElement.textContent = text;
-
-        // Save to localStorage so explain.html can use it
-        localStorage.setItem("courtText", text);
-        nextBtn.classList.remove("hidden");
-        nextBtn.href = "explain.html";
+        aiBtn.classList.remove("hidden");
       };
       reader.readAsDataURL(file);
+    }
+
+    async function handleAIExplain() {
+      const aiOutput = document.getElementById("aiOutput");
+      const aiSummaryLabel = document.getElementById("aiSummaryLabel");
+
+      aiOutput.classList.remove("hidden");
+      aiSummaryLabel.classList.remove("hidden");
+      aiOutput.innerText = "💬 Generating summary…";
+
+      const summary = await getGeminiResponse(extractedText);
+      aiOutput.innerText = summary;
+    }
+
+    async function getGeminiResponse(text) {
+      const apiKey = AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `Explain this court document in simple terms:\n\n${text}` }] }]
+        })
+      });
+
+      const data = await response.json();
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "❌ Gemini did not return a response.";
     }
   </script>
 
 </body>
 </html>
+
