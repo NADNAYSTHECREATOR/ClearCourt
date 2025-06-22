@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Upload Document – ClearCourt</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-4">
 
   <div class="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-6 mt-10">
     <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Upload a Court Document</h1>
     <p class="mb-6 text-center text-gray-600">
-      Select an image (JPG, PNG) or PDF of your court notice. We'll extract the text and help you understand it.
+      Select an image file (.JPG, .PNG) or PDF document. PDF support extracts only the first page.
     </p>
 
     <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.pdf" class="mb-4 block w-full border rounded p-2" />
@@ -23,25 +24,18 @@
     <h2 class="text-xl font-semibold mb-2">Extracted Text</h2>
     <pre id="extractedText" class="bg-gray-100 p-4 whitespace-pre-wrap rounded text-sm h-60 overflow-auto mb-4"></pre>
 
-    <button id="aiBtn" onclick="handleAIExplain()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full mb-6 hidden">Explain This Document</button>
-
-    <h2 class="text-xl font-semibold mb-2 hidden" id="aiSummaryLabel">AI Explanation</h2>
-    <pre id="aiOutput" class="bg-green-50 p-4 rounded text-sm text-gray-800 whitespace-pre-wrap h-60 overflow-auto hidden"></pre>
+    <a id="nextBtn" href="#" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 block text-center hidden">Next: Explain This Document →</a>
 
     <a href="index.html" class="text-blue-600 hover:underline block mt-6 text-center">← Back to Home</a>
   </div>
 
   <script>
-    let extractedText = "";
-
     async function startOCR() {
       const fileInput = document.getElementById('fileInput');
       const file = fileInput.files[0];
       const extractedTextElement = document.getElementById('extractedText');
       const loadingElement = document.getElementById('loading');
-      const aiBtn = document.getElementById('aiBtn');
-      const aiOutput = document.getElementById('aiOutput');
-      const aiSummaryLabel = document.getElementById('aiSummaryLabel');
+      const nextBtn = document.getElementById('nextBtn');
 
       if (!file) {
         alert("Please select a file.");
@@ -50,53 +44,73 @@
 
       loadingElement.classList.remove("hidden");
       extractedTextElement.textContent = "";
-      aiOutput.classList.add("hidden");
-      aiSummaryLabel.classList.add("hidden");
+      nextBtn.classList.add("hidden");
 
-      const reader = new FileReader();
-      reader.onload = async function () {
-        const imageData = reader.result;
-        const { data: { text } } = await Tesseract.recognize(imageData, 'eng');
+      try {
+        let imageData;
+
+        if (file.type === "application/pdf") {
+          // Process PDF with pdf.js
+          imageData = await pdfToImage(file);
+        } else if (['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+          // Process image file
+          imageData = await fileToDataURL(file);
+        } else {
+          alert("Unsupported file type! Please upload JPG, PNG, or PDF.");
+          loadingElement.classList.add("hidden");
+          return;
+        }
+
+        const { data: { text } } = await Tesseract.recognize(imageData, 'eng', {
+          logger: m => {
+            // Optional: console.log(m);
+          }
+        });
+
         loadingElement.classList.add("hidden");
-        extractedText = text;
-        extractedTextElement.textContent = text;
-        aiBtn.classList.remove("hidden");
-      };
-      reader.readAsDataURL(file);
+        extractedTextElement.textContent = text.trim() || "[No text detected]";
+        localStorage.setItem("courtText", text.trim());
+        nextBtn.classList.remove("hidden");
+        nextBtn.href = "explain.html";
+
+      } catch (error) {
+        loadingElement.classList.add("hidden");
+        alert("OCR failed. Please try a clearer image or PDF.");
+        console.error(error);
+      }
     }
 
-    async function handleAIExplain() {
-      const aiOutput = document.getElementById("aiOutput");
-      const aiSummaryLabel = document.getElementById("aiSummaryLabel");
-
-      aiOutput.classList.remove("hidden");
-      aiSummaryLabel.classList.remove("hidden");
-      aiOutput.innerText = "💬 Generating summary…";
-
-      const summary = await getGeminiResponse(extractedText);
-      aiOutput.innerText = summary;
-    }
-
-    async function getGeminiResponse(text) {
-      const apiKey = AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I
-
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `Explain this court document in simple terms:\n\n${text}` }] }]
-        })
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
+    }
 
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "❌ Gemini did not return a response.";
+    async function pdfToImage(file) {
+      const arrayBuffer = await file.arrayBuffer();
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const page = await pdf.getPage(1); // Only first page for now
+
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+      };
+
+      await page.render(renderContext).promise;
+
+      return canvas.toDataURL('image/png');
     }
   </script>
 
 </body>
 </html>
-
