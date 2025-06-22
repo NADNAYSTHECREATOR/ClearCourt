@@ -1,2 +1,2 @@
 # ClearCourt
-A legal document reader powered by AI and other tools; simplified and broken down documents; readable and navigation made easy.
+ClearCourt is a web app that helps users make sense of court documents — no lawyer required. Whether it’s an eviction notice, summons, or small claims case, ClearCourt uses Optical Character Recognition (OCR) and AI-powered summarization to read and explain legal documents in plain English.
