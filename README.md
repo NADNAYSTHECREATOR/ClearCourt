@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="clearcourt.png" alt="ClearCourt Logo" style="height: 100px; margin-bottom: 10px;">
+  <img src="ClearCourt.png" alt="ClearCourt Logo" style="height: 100px; margin-bottom: 10px;">
   <p style="color: #6b7280; font-size: 1.125rem; font-weight: 500; font-style: italic;">From Confusing to Clear</p>
 </div>
 
