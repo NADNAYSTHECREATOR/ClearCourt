@@ -32,9 +32,7 @@
           messages: [
             {
               author: "user",
-              content: {
-                text: `Explain this legal document in plain English:\n\n${text}`
-              }
+              content: `Explain this legal document in plain English:\n\n${text}`
             }
           ]
         },
@@ -56,7 +54,7 @@
       }
 
       const data = await response.json();
-      return data?.candidates?.[0]?.message?.content?.text || "No explanation returned.";
+      return data?.candidates?.[0]?.content || "No explanation returned.";
     }
 
     async function generateSummary() {
