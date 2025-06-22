@@ -20,41 +20,46 @@
   </div>
 
   <script>
-    // Paste your Gemini API key here
+    // Replace with your actual Google Gemini API key
     const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE";
 
     async function getGeminiResponse(text) {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: {
-            text: `Explain this legal document in plain English:\n\n${text}`
-          }
-        }),
-      });
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: {
+              text: `Explain this legal document in plain English:\n\n${text}`
+            }
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data?.candidates?.[0]?.content?.text || "No explanation returned.";
+
+      } catch (e) {
+        console.error("Fetch error:", e);
+        throw e;
       }
-
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.text || "No explanation returned.";
     }
 
     const summaryElement = document.getElementById("summary");
     const retryBtn = document.getElementById("retryBtn");
 
     async function summarizeAndShow(text) {
-      try {
-        summaryElement.textContent = "Summarizing document, please wait…";
-        retryBtn.classList.add("hidden");
+      summaryElement.textContent = "Summarizing document, please wait…";
+      retryBtn.classList.add("hidden");
 
+      try {
         const summary = await getGeminiResponse(text);
         summaryElement.textContent = summary;
-
       } catch (error) {
         summaryElement.textContent = "Failed to get summary: " + error.message;
         retryBtn.classList.remove("hidden");
@@ -76,7 +81,7 @@
     }
 
     // Start on page load
-    loadAndSummarize();
+    window.onload = loadAndSummarize;
   </script>
 
 </body>
