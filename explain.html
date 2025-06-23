@@ -25,21 +25,18 @@
     const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I"; 
 
     async function getGeminiResponse(text) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateMessage?key=${GEMINI_API_KEY}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
 
       const requestBody = {
-        prompt: {
-          messages: [
-            {
-              author: "user",
-              content: `Explain this legal document in plain English:\n\n${text}`
-            }
-          ]
-        },
-        temperature: 0.3,
-        candidateCount: 1,
-        topP: 0.8,
-        topK: 40
+        contents: [
+          {
+            parts: [
+              {
+                text: `Explain this legal document in plain English:\n\n${text}`
+              }
+            ]
+          }
+        ]
       };
 
       const response = await fetch(endpoint, {
@@ -50,11 +47,11 @@
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`API error: ${response.status} ${response.statusText} - ${errorData.error?.message || "No details"}`);
+        throw new Error(`API error: ${response.status} - ${errorData.error?.message || "No details"}`);
       }
 
       const data = await response.json();
-      return data?.candidates?.[0]?.content || "No explanation returned.";
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "No explanation returned.";
     }
 
     async function generateSummary() {
@@ -81,7 +78,6 @@
       }
     }
 
-    // Run on page load
     generateSummary();
   </script>
 </body>
