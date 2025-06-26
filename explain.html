@@ -22,13 +22,15 @@
   </div>
 
   <script>
-    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I";  // ✅ USE YOUR KEY
+    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I";  // Your Gemini API Key
 
     async function getGeminiSummary(text) {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/text-bison-001:generateText?key=${GEMINI_API_KEY}`;
 
       const requestBody = {
-        prompt: `Explain this legal document in plain English:\n\n${text}`,
+        prompt: {
+          text: `Explain this legal document in plain English:\n\n${text}`
+        },
         temperature: 0.3,
         maxOutputTokens: 512,
         topP: 0.8,
@@ -71,8 +73,9 @@
       }
     }
 
-    generateSummary();  // Run on load
+    generateSummary(); // Run on load
   </script>
 </body>
 </html>
+
 
