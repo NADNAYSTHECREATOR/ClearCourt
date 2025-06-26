@@ -22,21 +22,17 @@
   </div>
 
   <script>
-    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I"; 
+    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I";  // ✅ USE YOUR KEY
 
-    async function getGeminiResponse(text) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    async function getGeminiSummary(text) {
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/text-bison-001:generateText?key=${GEMINI_API_KEY}`;
 
       const requestBody = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `Explain this legal document in plain English:\n\n${text}`
-              }
-            ]
-          }
-        ]
+        prompt: `Explain this legal document in plain English:\n\n${text}`,
+        temperature: 0.3,
+        maxOutputTokens: 512,
+        topP: 0.8,
+        topK: 40
       };
 
       const response = await fetch(endpoint, {
@@ -46,39 +42,37 @@
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`API error: ${response.status} - ${errorData.error?.message || "No details"}`);
+        const error = await response.json().catch(() => ({}));
+        throw new Error(`API error: ${response.status} – ${error.error?.message || "Unknown error"}`);
       }
 
       const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "No explanation returned.";
+      return data?.candidates?.[0]?.output || "No explanation returned.";
     }
 
     async function generateSummary() {
-      const summaryElement = document.getElementById("summary");
-      const loadingElement = document.getElementById("loading");
+      const summaryEl = document.getElementById("summary");
+      const loadingEl = document.getElementById("loading");
       const text = localStorage.getItem("courtText");
 
       if (!text) {
-        summaryElement.textContent = "No document text found. Please upload and extract text first.";
-        loadingElement.style.display = "none";
+        summaryEl.textContent = "No document text found. Please upload and extract text first.";
+        loadingEl.style.display = "none";
         return;
       }
 
-      loadingElement.style.display = "block";
-      summaryElement.textContent = "";
-
       try {
-        const explanation = await getGeminiResponse(text);
-        summaryElement.textContent = explanation;
+        const summary = await getGeminiSummary(text);
+        summaryEl.textContent = summary;
       } catch (err) {
-        summaryElement.textContent = "Failed to get summary: " + err.message;
+        summaryEl.textContent = "Failed to get summary: " + err.message;
       } finally {
-        loadingElement.style.display = "none";
+        loadingEl.style.display = "none";
       }
     }
 
-    generateSummary();
+    generateSummary();  // Run on load
   </script>
 </body>
 </html>
+
