@@ -1,85 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Explain Document – ClearCourt</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-</head>
-<body class="bg-gray-100 min-h-screen p-4">
+<script>
+  const MODEL = "models/CHAT_MODEL_NAME";  // replace with the model you found
+  const KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I";
 
-  <div class="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-6 mt-10">
-    <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Document Summary</h1>
-    <p class="mb-6 text-center text-gray-600">
-      Here is a summary and explanation of your court document:
-    </p>
+  async function summarize(text) {
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/${MODEL}:generateMessage?key=${KEY}`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: { messages:[{author:'user',content:`Summarize:\n\n${text}`}] },
+        temperature:0.3, candidateCount:1
+      })
+    });
+    if (!res.ok) throw await res.json();
+    const d = await res.json();
+    return d.candidates[0].message.content;
+  }
 
-    <div id="loading" class="text-center text-gray-500 mb-4">🔄 Generating summary…</div>
-
-    <pre id="summary" class="bg-gray-100 p-4 whitespace-pre-wrap rounded text-sm h-60 overflow-auto mb-4"></pre>
-
-    <a href="upload.html" class="text-blue-600 hover:underline block text-center">← Back to Upload</a>
-  </div>
-
-  <script>
-    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I"; // Your Gemini API key
-
-    async function getGeminiResponse(text) {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-
-      const requestBody = {
-        contents: [
-          {
-            parts: [
-              {
-                text: `Explain this legal document in plain English:\n\n${text}`
-              }
-            ]
-          }
-        ]
-      };
-
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`API error: ${response.status} – ${errorData.error?.message || "No details"}`);
-      }
-
-      const data = await response.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text || "No explanation returned.";
-    }
-
-    async function generateSummary() {
-      const summaryElement = document.getElementById("summary");
-      const loadingElement = document.getElementById("loading");
-      const text = localStorage.getItem("courtText");
-
-      if (!text) {
-        summaryElement.textContent = "No document text found. Please upload and extract text first.";
-        loadingElement.style.display = "none";
-        return;
-      }
-
-      loadingElement.style.display = "block";
-      summaryElement.textContent = "";
-
-      try {
-        const explanation = await getGeminiResponse(text);
-        summaryElement.textContent = explanation;
-      } catch (err) {
-        summaryElement.textContent = "Failed to get summary: " + err.message;
-      } finally {
-        loadingElement.style.display = "none";
-      }
-    }
-
-    // Run on page load
-    generateSummary();
-  </script>
-</body>
-</html>
+  // Then call summarize() inside generateSummary()...
+</script>
