@@ -1,35 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>List Gemini Models</title>
-</head>
+<html>
+<head><title>List Models</title></head>
 <body>
-  <h1>Available Gemini Models</h1>
-  <pre id="output" style="white-space: pre-wrap; background:#f0f0f0; padding: 1em;"></pre>
-
+  <pre id="out"></pre>
   <script>
-    const GEMINI_API_KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I"; 
-
-    async function listModels() {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`;
-
-      try {
-        const response = await fetch(endpoint);
-        if (!response.ok) {
-          document.getElementById('output').textContent = `Error: ${response.status} - ${response.statusText}`;
-          return;
-        }
-        const data = await response.json();
-        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-        console.log("Available models:", data);
-      } catch (error) {
-        document.getElementById('output').textContent = 'Fetch error: ' + error.message;
-      }
-    }
-
-    listModels();
+    const KEY = "AIzaSyDjz-O7bHDY6hTTj51czVHeK_b-yZL2w5I"; 
+    fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${KEY}`)
+      .then(r => r.json())
+      .then(d => document.getElementById("out").textContent = JSON.stringify(d, null, 2))
+      .catch(e => document.getElementById("out").textContent = e);
   </script>
 </body>
 </html>
